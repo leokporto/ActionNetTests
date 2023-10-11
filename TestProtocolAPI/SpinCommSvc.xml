@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Protocol>
+  <ShouldCloseCommAPIAfterErrors>true</ShouldCloseCommAPIAfterErrors>
+  <EnableUpdateTagsByCustomSetValueOnly>true</EnableUpdateTagsByCustomSetValueOnly>
+  <Description>SPIN communication service protocol</Description>
+  <AssemblyName>T.ProtocolDriver.IEC8705104</AssemblyName>
+	<ProtocolOptions>
+		<ProtocolOptions>
+			<Names P1="Command parameters" P2="Use invalid points" />
+			<EditTypes P1="Text" P2="ComboBox=Yes;Not;"/>
+			<EditModes P1="Enable" P2="Enable" />
+			<Hint P1="Command parameters description" P2="Include invalid points on operations"/>
+			<DefaultValues P1="" P2="Not" />
+			<GridProperties G1="PopUpWidth" G2="PropertyColumnWidth"/>
+			<GridValues P1="380" P2="280"/>
+		</ProtocolOptions>
+	</ProtocolOptions>
+
+	<Settings AllowCustomTypes="true">
+		<CustomTCPIP>
+			<DefaultValues P1="false" P2="true" P3="102" P4="1"/>
+			<EditModes P1="Hidden" P2="Enabled" P3="Enable" P4="Enable" />
+			<GridProperties G1="PopUpWidth" G2="PropertyColumnWidth" />
+			<GridValues P1="180" P2="90" />
+		</CustomTCPIP>
+	</Settings>
+
+	<Station>
+		<CustomTCPIP>
+			<Names P1="IP" P2="Port"  />
+			<EditTypes  P1="ip" P2="int"   />
+			<DefaultValues P1 ="127.0.0.1" P2="4545" />
+			<EditModes P1="Hidden" P2="Hidden"/>
+			<Hint P1="IP Address" P2="Port"/>
+			<GridProperties G1="PopUpWidth" G2="PropertyColumnWidth" />
+			<GridValues G1="50" G2="20" />
+		</CustomTCPIP>
+	</Station>
+
+	<Points>
+		<Address AllowConfigDataType="true">
+			<Names P1="Point Type" P2="" P3="Value to signal" P4="" P5="Signalling tag"  />
+			<EditTypes  P1="ComboBox=CMD: - Command type;SP: - Set point intger;SPF: - Set point float;PRT: - Protection;" P2="Separator" P3="int" P4="Separator" P5="Text"   />
+			<DefaultValues P1 ="" P2=":"  P3="0" P4=":" p5=""/>
+			<EditModes P1="Enable" P2="Hidden" P3="Enable" P4="Hidden" P5="Enable"/>
+			<Hint P1="Command type" P2="" P3="Value for back signal" P4="" P5="Tag name for signalling tag, if not equal command"/>
+			<GridProperties G1="PopUpWidth" G2="PropertyColumnWidth" />
+			<GridValues G1="380" G2="250" />
+		</Address>
+	</Points>
+</Protocol>
