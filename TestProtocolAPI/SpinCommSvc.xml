@@ -2,7 +2,7 @@
 <Protocol>
 	<ShouldCloseCommAPIAfterErrors>true</ShouldCloseCommAPIAfterErrors>
 	<Description>SPIN communication service protocol</Description>
-	<AssemblyName>T.ProtocolDriver.IEC8705104</AssemblyName>
+	<AssemblyName>T.ProtocolDriver.SpinCommSvc</AssemblyName>
 	<AllowUserTypes>true</AllowUserTypes>
 	<ProtocolOptions>
 		<!--<ProtocolOptions>
