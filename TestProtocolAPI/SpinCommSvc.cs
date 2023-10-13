@@ -28,6 +28,11 @@ namespace T.ProtocolDriver
 		}
 
 		#endregion
+
+		public override eReturn BuildCommand(SessionMsg msg)
+		{
+			return base.BuildCommand(msg);
+		}
 		#endregion
 	}
 }

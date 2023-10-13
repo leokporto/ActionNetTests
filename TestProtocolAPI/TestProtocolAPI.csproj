@@ -48,7 +48,22 @@
     <Compile Include="SpinCommSvc.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="SpinCommSvc.xml" />
+    <Content Include="SpinCommSvc.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>TASKKILL /F /T /IM "ActionNet.exe"
+TASKKILL /F /T /IM "ModuleInformation.exe"
+TASKKILL /F /T /IM "TManagerExe.exe"
+TASKKILL /F /T /IM "TRichClient.exe"
+TASKKILL /F /T /IM "TRunModule.exe"
+TASKKILL /F /T /IM "TServer.exe"
+TASKKILL /F /T /IM "TStartup.exe"
+TASKKILL /F /T /IM "TraceWindow.exe"
+copy /Y $(TargetPath) "C:\Program Files (x86)\SPIN\Action.Net\an-9.2\Protocols\$(TargetFileName)"
+copy /Y "$(TargetDir)\$(TargetName).pdb" "C:\Program Files (x86)\SPIN\Action.Net\an-9.2\Protocols\$(TargetName).pdb"
+copy /Y "$(TargetDir)\SpinCommSvc.xml"  "C:\Program Files (x86)\SPIN\Action.Net\an-9.2\Protocols\SpinCommSvc.xml"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

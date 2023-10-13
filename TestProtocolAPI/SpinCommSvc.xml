@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Protocol>
-  <ShouldCloseCommAPIAfterErrors>true</ShouldCloseCommAPIAfterErrors>
-  <EnableUpdateTagsByCustomSetValueOnly>true</EnableUpdateTagsByCustomSetValueOnly>
-  <Description>SPIN communication service protocol</Description>
-  <AssemblyName>T.ProtocolDriver.IEC8705104</AssemblyName>
+	<ShouldCloseCommAPIAfterErrors>true</ShouldCloseCommAPIAfterErrors>
+	<Description>SPIN communication service protocol</Description>
+	<AssemblyName>T.ProtocolDriver.IEC8705104</AssemblyName>
+	<AllowUserTypes>true</AllowUserTypes>
 	<ProtocolOptions>
-		<ProtocolOptions>
+		<!--<ProtocolOptions>
 			<Names P1="Command parameters" P2="Use invalid points" />
 			<EditTypes P1="Text" P2="ComboBox=Yes;Not;"/>
 			<EditModes P1="Enable" P2="Enable" />
@@ -13,19 +13,19 @@
 			<DefaultValues P1="" P2="Not" />
 			<GridProperties G1="PopUpWidth" G2="PropertyColumnWidth"/>
 			<GridValues P1="380" P2="280"/>
-		</ProtocolOptions>
+		</ProtocolOptions>-->
 	</ProtocolOptions>
 
-	<Settings AllowCustomTypes="true">
+	<!--<Settings AllowCustomTypes="true">
 		<CustomTCPIP>
 			<DefaultValues P1="false" P2="true" P3="102" P4="1"/>
 			<EditModes P1="Hidden" P2="Enabled" P3="Enable" P4="Enable" />
 			<GridProperties G1="PopUpWidth" G2="PropertyColumnWidth" />
 			<GridValues P1="180" P2="90" />
 		</CustomTCPIP>
-	</Settings>
+	</Settings>-->
 
-	<Station>
+	<!--<Station>
 		<CustomTCPIP>
 			<Names P1="IP" P2="Port"  />
 			<EditTypes  P1="ip" P2="int"   />
@@ -35,7 +35,7 @@
 			<GridProperties G1="PopUpWidth" G2="PropertyColumnWidth" />
 			<GridValues G1="50" G2="20" />
 		</CustomTCPIP>
-	</Station>
+	</Station>-->
 
 	<Points>
 		<Address AllowConfigDataType="true">
