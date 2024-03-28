@@ -26,7 +26,7 @@ namespace ConfluenceExport
 				})
 				.ConfigureAppConfiguration((hostingContext, config) =>
 				{
-					config.AddUserSecrets("e81a2485-9782-49c8-9c7e-9f15836e25e9");
+					config.AddUserSecrets<Program>().Build();
 				})
 				.ConfigureServices(services =>
 				{
