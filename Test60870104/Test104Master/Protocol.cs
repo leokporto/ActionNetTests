@@ -1,39 +1,58 @@
-﻿using lib60870;
-using lib60870.CS101;
+﻿using lib60870.CS101;
 using lib60870.CS104;
-using lib60870.linklayer;
+using lib60870;
 using System;
-using System.Net.Sockets;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Test104Master.ViewModel;
 
-namespace MasterClient
+namespace Test104Master
 {
-	internal class Program
+	internal class Protocol : IDisposable
 	{
-		private static void ConnectionHandler(object parameter, ConnectionEvent connectionEvent)
+		private Connection _conn104 = null;
+		private ConnectionEvent _connectionStatus = ConnectionEvent.CLOSED;
+		private bool disposedValue;
+
+		internal delegate void ConnectionStatusHandler(string status);
+		public event ConnectionStatusHandler ConnectionStatusChanged;
+
+		internal void ConnectionHandler(object parameter, ConnectionEvent connectionEvent)
 		{
+			_connectionStatus = connectionEvent;
+			string message = "";
+
 			switch (connectionEvent)
 			{
 				case ConnectionEvent.OPENED:
-					Console.WriteLine("Connected");
+					message = $"{DateTime.Now.ToLongTimeString()} - Connected";
 					break;
 				case ConnectionEvent.CLOSED:
-					Console.WriteLine("Connection closed");
+					message = $"{DateTime.Now.ToLongTimeString()} - Connection closed";
+					break;
+				case ConnectionEvent.CONNECT_FAILED:
+					message = $"{DateTime.Now.ToLongTimeString()} - Connection Failed";
 					break;
 				case ConnectionEvent.STARTDT_CON_RECEIVED:
-					Console.WriteLine("STARTDT CON received");
+					message = $"{DateTime.Now.ToLongTimeString()} - STARTDT CON received";
 					break;
 				case ConnectionEvent.STOPDT_CON_RECEIVED:
-					Console.WriteLine("STOPDT CON received");
+					message = $"{DateTime.Now.ToLongTimeString()} - STOPDT CON received";
 					break;
 			}
+
+			ConnectionStatusChanged?.Invoke(message);
 		}
 
-		private static bool asduReceivedHandler(object parameter, ASDU asdu)
+		internal bool AsduReceivedHandler(object parameter, ASDU asdu)
 		{
 			Console.WriteLine(asdu.ToString());
 
 			if (asdu.TypeId == TypeID.M_SP_NA_1)
-			{
+			{				
 
 				for (int i = 0; i < asdu.NumberOfElements; i++)
 				{
@@ -108,16 +127,6 @@ namespace MasterClient
 				}
 
 			}
-			else if (asdu.TypeId == TypeID.M_ME_NA_1)
-			{
-				for (int i = 0; i < asdu.NumberOfElements; i++)
-				{
-
-					var msv = (MeasuredValueNormalized)asdu.GetElement(i);
-
-					Console.WriteLine("  IOA: " + msv.ObjectAddress + " scaled value: " + msv.NormalizedValue);
-				}
-			}
 			else if (asdu.TypeId == TypeID.M_ME_ND_1)
 			{
 
@@ -137,12 +146,6 @@ namespace MasterClient
 				else if (asdu.Cot == CauseOfTransmission.ACTIVATION_TERMINATION)
 					Console.WriteLine("Interrogation command terminated");
 			}
-			else if (asdu.TypeId == TypeID.C_DC_NA_1) {
-				if (asdu.Cot == CauseOfTransmission.ACTIVATION_CON) {
-					var cmd = (DoubleCommand)asdu.GetElement(0);
-					Console.WriteLine("  IOA: " + cmd.ObjectAddress + " state: " + cmd.State + ". Command Success!");
-				}
-			}
 			else
 			{
 				Console.WriteLine("Unknown message type!");
@@ -151,95 +154,71 @@ namespace MasterClient
 			return true;
 		}
 
-		public static void Main(string[] args)
+		internal void OpenConnection() 
 		{
-			bool running = true;
-
-			Console.CancelKeyPress += delegate (object sender, ConsoleCancelEventArgs e)
+			try
 			{
-				e.Cancel = true;
-				running = false;
-			};
 
-			Console.WriteLine("Using lib60870.NET version " + LibraryCommon.GetLibraryVersionString());
 
-			APCIParameters aPCIParameters = new APCIParameters()
-			{
-				T0 = 30,
-				T1 = 15,
-				T2 = 10,
-				T3 = 20,
-				W = 8,
-				K = 12
-			};
-			ApplicationLayerParameters applicationLayerParameters = new ApplicationLayerParameters()
-			{
-				OA = 1
-			};
+				_conn104 = new Connection("127.0.0.1");
 
-			Connection con = new Connection("127.0.0.1", 2404, aPCIParameters, applicationLayerParameters);
+				_conn104.DebugOutput = true;
 
-			con.DebugOutput = true;
+				_conn104.SetASDUReceivedHandler(AsduReceivedHandler, null);
+				_conn104.SetConnectionHandler(ConnectionHandler, null);
+				_conn104.Connect();
 
-			con.SetASDUReceivedHandler(asduReceivedHandler, null);
-			con.SetConnectionHandler(ConnectionHandler, null);
-
-			TryConnect(aPCIParameters, ref con);
-			AutoResetEvent autoResetEvent = new AutoResetEvent(false);
-			bool isOn = false;
-			if(con.IsRunning)
-			{
-				Timer timer1 = new Timer((state)=> {
-					if(isOn)
-						con.SendControlCommand(CauseOfTransmission.ACTIVATION, 1, new DoubleCommand(4, DoubleCommand.ON, false, 0));
-					else
-						con.SendControlCommand(CauseOfTransmission.ACTIVATION, 1, new DoubleCommand(4, DoubleCommand.OFF, false, 0));
-					isOn = !isOn;
-				},autoResetEvent, 1000, 5000);
 				
-					
 			}
-
-			while (running)
+			catch (Exception ex)
 			{
-				Thread.Sleep(100);
+				Console.WriteLine("Exception: " + ex.Message);
 			}
-
-			con.Close();
 		}
 
-
-		private static void TryConnect(APCIParameters aPCIParameters, ref Connection con)
+		internal void CloseConnection() 
 		{
-			bool t0Reached = false;
-			DateTime lastTried = DateTime.Now;
-
-			do
+			try
 			{
-
-				try
-				{
-					con.Connect();
-
-					break;
-				}
-				catch (ConnectionException e)
-				{
-					Console.WriteLine("SocketException: {0}", e.Message);
-				}
-				finally
-				{
-					TimeSpan ellapsed = DateTime.Now - lastTried;
-					t0Reached = (ellapsed.TotalSeconds >= aPCIParameters.T0);
-				}
-				Thread.Sleep(1000);
-
-			} while (!t0Reached);
-
-			if (t0Reached)
-			{
-				Console.WriteLine("The connection timeout (T0) was reached. No connection to server.");
+				_conn104?.Close();
 			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("Exception: " + ex.Message);
+			}
+		}
+
+		protected virtual void Dispose(bool disposing)
+		{
+			if (!disposedValue)
+			{
+				if (disposing)
+				{
+					// TODO: dispose managed state (managed objects)
+				}
+
+				// TODO: free unmanaged resources (unmanaged objects) and override finalizer
+				// TODO: set large fields to null
+
+				if(_connectionStatus != ConnectionEvent.CLOSED)
+					_conn104?.Close();
+
+				disposedValue = true;
+			}
+		}
+
+		// // TODO: override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources
+		// ~Protocol()
+		// {
+		//     // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+		//     Dispose(disposing: false);
+		// }
+
+		public void Dispose()
+		{
+			// Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+			Dispose(disposing: true);
+			GC.SuppressFinalize(this);
 		}
 	}
 }
