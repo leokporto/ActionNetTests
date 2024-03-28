@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Test104Master"
         xmlns:vm="clr-namespace:Test104Master.ViewModel"
+        xmlns:models="clr-namespace:Test104Master.Model"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Window.Resources>
@@ -16,6 +17,7 @@
                     <Setter Property="Padding" Value="10, 0" />
                 </Style.Setters>
             </Style>
+            
         </ResourceDictionary>
     </Window.Resources>
     <Window.DataContext>
@@ -25,6 +27,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="32" />
             <RowDefinition Height="100" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal">
             <Button Content="Connect" Click="Connect_Click" />
@@ -33,5 +36,31 @@
         <GroupBox Grid.Row="1" Margin="5" Header="Connection Status">
             <TextBox Text="{Binding StatusMsg}" ScrollViewer.VerticalScrollBarVisibility="Auto" MaxLines="10" IsReadOnly="True" />
         </GroupBox>
+        <!--<DataGrid Grid.Row="2" ItemsSource="{Binding Points}" AutoGenerateColumns="True" />-->
+        <ItemsControl Grid.Row="2" ItemsSource="{Binding Points}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type models:Point}">
+                    <StackPanel Orientation="Horizontal" Margin="5">
+                        <TextBlock Text="{Binding Key}" Margin="0 0 5 0" />
+                        <TextBlock Text="{Binding Value, StringFormat=N2}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Quality}" Value="192">
+                                            <Setter Property="Foreground" Value="Red" />
+                                            <Setter Property="TextDecorations" Value="None" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Quality}" Value="0">
+                                            <Setter Property="Foreground" Value="DarkGray" />
+                                            <Setter Property="TextDecorations" Value="Strikethrough" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </Grid>
 </Window>

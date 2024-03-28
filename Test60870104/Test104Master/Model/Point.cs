@@ -13,6 +13,10 @@ namespace Test104Master.Model
 		private object _value;
 		private DateTimeOffset _timestamp;
 
+		public string Key {
+			get => $"{TypeName}:{Address}"; 
+		}
+
 		public string TypeName { get; set; }
 		public int Address { get; set; }
 		

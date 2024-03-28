@@ -8,6 +8,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Test104Master.ViewModel;
+using Test104Master.Model;
+using Test104Master.Extensions;
+using System.Reflection;
 
 namespace Test104Master
 {
@@ -19,6 +22,9 @@ namespace Test104Master
 
 		internal delegate void ConnectionStatusHandler(string status);
 		public event ConnectionStatusHandler ConnectionStatusChanged;
+
+		internal delegate void PointsReceivedHandler(List<Point> points);
+		public event PointsReceivedHandler PointsReceived;
 
 		internal void ConnectionHandler(object parameter, ConnectionEvent connectionEvent)
 		{
@@ -50,109 +56,180 @@ namespace Test104Master
 		internal bool AsduReceivedHandler(object parameter, ASDU asdu)
 		{
 			Console.WriteLine(asdu.ToString());
+			List<Point> points = new List<Point>();
 
-			if (asdu.TypeId == TypeID.M_SP_NA_1)
-			{				
+			string typeName = asdu.TypeId.ToString();
+			switch (asdu.TypeId) {
+				case TypeID.M_ME_NC_1:
+					for (int i = 0; i < asdu.NumberOfElements; i++)
+					{
+						var mfv = (MeasuredValueShort)asdu.GetElement(i);
 
-				for (int i = 0; i < asdu.NumberOfElements; i++)
-				{
+						Point point = GetPointFromAsduElement(typeName, mfv.ObjectAddress, mfv.Value, qualityDescriptor: mfv.Quality);
+						points.Add(point);
+						//Console.WriteLine("  IOA: " + mfv.ObjectAddress + " float value: " + mfv.Value);
+						//Console.WriteLine("   " + mfv.Quality.ToString());
+					}
+					break;
+				case TypeID.C_SE_NC_1:
+					for(int i= 0; i < asdu.NumberOfElements; i++)
+					{
+						var val = (SetpointCommandShort)asdu.GetElement(i);
 
-					var val = (SinglePointInformation)asdu.GetElement(i);
+						Console.WriteLine($"Command {typeName}. COT: {asdu.Cot.ToString()} :: Address: {val.ObjectAddress}. Value: {val.Value}");
+					}
+					break;
+				case TypeID.C_SC_NA_1:
+					for (int i = 0; i < asdu.NumberOfElements; i++)
+					{
+						var val = (SetpointCommandNormalized)asdu.GetElement(i);
 
-					Console.WriteLine("  IOA: " + val.ObjectAddress + " SP value: " + val.Value);
-					Console.WriteLine("   " + val.Quality.ToString());
-				}
+						Console.WriteLine($"Command {typeName}. COT: {asdu.Cot.ToString()} :: Address: {val.ObjectAddress}. Value: {val.NormalizedValue}");
+					}
+					break;
+				case TypeID.C_DC_NA_1:
+					for (int i = 0; i < asdu.NumberOfElements; i++)
+					{
+						var val = (DoubleCommand)asdu.GetElement(i);
+
+						Console.WriteLine($"Command {typeName}. COT: {asdu.Cot.ToString()} :: Address: {val.ObjectAddress}. State: {val.State}");
+					}
+					break;
 			}
-			else if (asdu.TypeId == TypeID.M_ME_TE_1)
-			{
+			
+			if(points.Count > 0)
+				PointsReceived?.Invoke(points);
 
-				for (int i = 0; i < asdu.NumberOfElements; i++)
-				{
+			//if (asdu.TypeId == TypeID.M_SP_NA_1)
+			//{				
 
-					var msv = (MeasuredValueScaledWithCP56Time2a)asdu.GetElement(i);
+			//	for (int i = 0; i < asdu.NumberOfElements; i++)
+			//	{
 
-					Console.WriteLine("  IOA: " + msv.ObjectAddress + " scaled value: " + msv.ScaledValue);
-					Console.WriteLine("   " + msv.Quality.ToString());
-					Console.WriteLine("   " + msv.Timestamp.ToString());
-				}
+			//		var val = (SinglePointInformation)asdu.GetElement(i);
 
-			}
-			else if (asdu.TypeId == TypeID.M_ME_TF_1)
-			{
+			//		Point newPoint = GetPointFromAsduElement("M_SP_NA", val.ObjectAddress, val.Value, qualityDescriptor: val.Quality);
+			//		points.Add(newPoint);
+			//		//Console.WriteLine("  IOA: " + val.ObjectAddress + " SP value: " + val.Value);
+			//		//Console.WriteLine("   " + val.Quality.ToString());
+			//	}
+			//}
+			//else if (asdu.TypeId == TypeID.M_ME_TE_1)
+			//{
 
-				for (int i = 0; i < asdu.NumberOfElements; i++)
-				{
-					var mfv = (MeasuredValueShortWithCP56Time2a)asdu.GetElement(i);
+			//	for (int i = 0; i < asdu.NumberOfElements; i++)
+			//	{
 
-					Console.WriteLine("  IOA: " + mfv.ObjectAddress + " float value: " + mfv.Value);
-					Console.WriteLine("   " + mfv.Quality.ToString());
-					Console.WriteLine("   " + mfv.Timestamp.ToString());
-					Console.WriteLine("   " + mfv.Timestamp.GetDateTime().ToString());
-				}
-			}
-			else if (asdu.TypeId == TypeID.M_SP_TB_1)
-			{
+			//		var msv = (MeasuredValueScaledWithCP56Time2a)asdu.GetElement(i);
 
-				for (int i = 0; i < asdu.NumberOfElements; i++)
-				{
+			//		Point newPoint = GetPointFromAsduElement("M_ME_TE", val.ObjectAddress, val.Value, qualityDescriptor: val.Quality);
+			//		points.Add(newPoint);
 
-					var val = (SinglePointWithCP56Time2a)asdu.GetElement(i);
+			//		Console.WriteLine("  IOA: " + msv.ObjectAddress + " scaled value: " + msv.ScaledValue);
+			//		Console.WriteLine("   " + msv.Quality.ToString());
+			//		Console.WriteLine("   " + msv.Timestamp.ToString());
+			//	}
 
-					Console.WriteLine("  IOA: " + val.ObjectAddress + " SP value: " + val.Value);
-					Console.WriteLine("   " + val.Quality.ToString());
-					Console.WriteLine("   " + val.Timestamp.ToString());
-				}
-			}
-			else if (asdu.TypeId == TypeID.M_ME_NC_1)
-			{
+			//}
+			//else if (asdu.TypeId == TypeID.M_ME_TF_1)
+			//{
 
-				for (int i = 0; i < asdu.NumberOfElements; i++)
-				{
-					var mfv = (MeasuredValueShort)asdu.GetElement(i);
+			//	for (int i = 0; i < asdu.NumberOfElements; i++)
+			//	{
+			//		var mfv = (MeasuredValueShortWithCP56Time2a)asdu.GetElement(i);
 
-					Console.WriteLine("  IOA: " + mfv.ObjectAddress + " float value: " + mfv.Value);
-					Console.WriteLine("   " + mfv.Quality.ToString());
-				}
-			}
-			else if (asdu.TypeId == TypeID.M_ME_NB_1)
-			{
+			//		Console.WriteLine("  IOA: " + mfv.ObjectAddress + " float value: " + mfv.Value);
+			//		Console.WriteLine("   " + mfv.Quality.ToString());
+			//		Console.WriteLine("   " + mfv.Timestamp.ToString());
+			//		Console.WriteLine("   " + mfv.Timestamp.GetDateTime().ToString());
+			//	}
+			//}
+			//else if (asdu.TypeId == TypeID.M_SP_TB_1)
+			//{
 
-				for (int i = 0; i < asdu.NumberOfElements; i++)
-				{
+			//	for (int i = 0; i < asdu.NumberOfElements; i++)
+			//	{
 
-					var msv = (MeasuredValueScaled)asdu.GetElement(i);
+			//		var val = (SinglePointWithCP56Time2a)asdu.GetElement(i);
 
-					Console.WriteLine("  IOA: " + msv.ObjectAddress + " scaled value: " + msv.ScaledValue);
-					Console.WriteLine("   " + msv.Quality.ToString());
+			//		Console.WriteLine("  IOA: " + val.ObjectAddress + " SP value: " + val.Value);
+			//		Console.WriteLine("   " + val.Quality.ToString());
+			//		Console.WriteLine("   " + val.Timestamp.ToString());
+			//	}
+			//}
+			//else if (asdu.TypeId == TypeID.M_ME_NC_1)
+			//{
+
+			//	for (int i = 0; i < asdu.NumberOfElements; i++)
+			//	{
+			//		var mfv = (MeasuredValueShort)asdu.GetElement(i);
+
+			//		Console.WriteLine("  IOA: " + mfv.ObjectAddress + " float value: " + mfv.Value);
+			//		Console.WriteLine("   " + mfv.Quality.ToString());
+			//	}
+			//}
+			//else if (asdu.TypeId == TypeID.M_ME_NB_1)
+			//{
+
+			//	for (int i = 0; i < asdu.NumberOfElements; i++)
+			//	{
+
+			//		var msv = (MeasuredValueScaled)asdu.GetElement(i);
+
+			//		Console.WriteLine("  IOA: " + msv.ObjectAddress + " scaled value: " + msv.ScaledValue);
+			//		Console.WriteLine("   " + msv.Quality.ToString());
 					
-				}
+			//	}
 
-			}
-			else if (asdu.TypeId == TypeID.M_ME_ND_1)
-			{
+			//}
+			//else if (asdu.TypeId == TypeID.M_ME_ND_1)
+			//{
 
-				for (int i = 0; i < asdu.NumberOfElements; i++)
-				{
+			//	for (int i = 0; i < asdu.NumberOfElements; i++)
+			//	{
 
-					var msv = (MeasuredValueNormalizedWithoutQuality)asdu.GetElement(i);
+			//		var msv = (MeasuredValueNormalizedWithoutQuality)asdu.GetElement(i);
 
-					Console.WriteLine("  IOA: " + msv.ObjectAddress + " scaled value: " + msv.NormalizedValue);
-				}
+			//		Console.WriteLine("  IOA: " + msv.ObjectAddress + " scaled value: " + msv.NormalizedValue);
+			//	}
 
-			}
-			else if (asdu.TypeId == TypeID.C_IC_NA_1)
-			{
-				if (asdu.Cot == CauseOfTransmission.ACTIVATION_CON)
-					Console.WriteLine((asdu.IsNegative ? "Negative" : "Positive") + "confirmation for interrogation command");
-				else if (asdu.Cot == CauseOfTransmission.ACTIVATION_TERMINATION)
-					Console.WriteLine("Interrogation command terminated");
-			}
-			else
-			{
-				Console.WriteLine("Unknown message type!");
-			}
+			//}
+			//else if (asdu.TypeId == TypeID.C_IC_NA_1)
+			//{
+			//	if (asdu.Cot == CauseOfTransmission.ACTIVATION_CON)
+			//		Console.WriteLine((asdu.IsNegative ? "Negative" : "Positive") + "confirmation for interrogation command");
+			//	else if (asdu.Cot == CauseOfTransmission.ACTIVATION_TERMINATION)
+			//		Console.WriteLine("Interrogation command terminated");
+			//}
+			//else
+			//{
+			//	Console.WriteLine("Unknown message type!");
+			//}
 
 			return true;
+		}
+
+		private Point GetPointFromAsduElement(string pointType, int address, object value = null, DateTimeOffset? timestamp = null, QualityDescriptor qualityDescriptor = null)
+		{
+			if (string.IsNullOrEmpty(pointType))
+				return null;
+			if(address < 0)
+				return null;
+
+			Point point = new Point();
+			point.TypeName = pointType;
+			point.Address = address;
+
+			if(qualityDescriptor != null)
+				point.Quality = qualityDescriptor.GetOpcQuality();
+			
+			if(value != null)
+				point.Value = value;
+
+			if(timestamp != null)
+				point.Timestamp = timestamp.Value;
+
+			return point;
 		}
 
 		internal void OpenConnection() 
@@ -167,6 +244,7 @@ namespace Test104Master
 
 				_conn104.SetASDUReceivedHandler(AsduReceivedHandler, null);
 				_conn104.SetConnectionHandler(ConnectionHandler, null);
+				
 				_conn104.Connect();
 
 				
