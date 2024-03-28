@@ -61,6 +61,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Base\INPCBase.cs" />
+    <Compile Include="Model\Point.cs" />
     <Compile Include="Protocol.cs" />
     <Compile Include="ViewModel\MainWindowVm.cs" />
     <Page Include="MainWindow.xaml">

@@ -124,6 +124,7 @@ namespace Test104Master
 
 					Console.WriteLine("  IOA: " + msv.ObjectAddress + " scaled value: " + msv.ScaledValue);
 					Console.WriteLine("   " + msv.Quality.ToString());
+					
 				}
 
 			}
