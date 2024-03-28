@@ -1,2 +1,9 @@
 # Test60870104
-Repository to test MZ Automation IEC-60870-104 libraries against Action.Net 104 existing protocols
+Repository to test MZ Automation [Lib60870.NET](https://github.com/mz-automation/lib60870.NET) libraries against [Action.Net](https://www.spinengenharia.com.br/en/spin-products/action-net/) scada IEC-60870-104 existing protocols.
+
+It will contain:
+- A project with Master implementation for IEC-60870-104 to be tested against Action.Net's IEC-60870-104 server protocol;
+- A project with Server implementation for IEC-60870-104 to be tested against Action.Net's IEC-60870-104 master protocol.
+
+**Restrictions**
+The projects will use only a few points just for test purposes.
