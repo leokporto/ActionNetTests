@@ -1,0 +1,82 @@
+﻿<UserControl x:Class="SPIN.Wpf.Controls.OTSAux.JsonTreeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:jlinq="clr-namespace:Newtonsoft.Json.Linq;assembly=Newtonsoft.Json"
+             xmlns:local="clr-namespace:SPIN.Wpf.Controls.OTSAux"
+             xmlns:selectors="clr-namespace:SPIN.Wpf.Controls.OTSAux.TemplateSelectors"
+             xmlns:converters="clr-namespace:SPIN.Wpf.Controls.OTSAux.Converters"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <converters:ComplexPropertyMethodToValueConverter x:Key="ComplexPropertyMethodToValueConverter" />
+        <converters:JArrayLengthConverter x:Key="JArrayLengthConverter" />
+        <converters:JValueConverter x:Key="JValueConverter" />
+        <converters:JPropertyTypeToColorConverter x:Key="JPropertyTypeToColorConverter" />
+        <converters:JValueTypeToColorConverter x:Key="JValueTypeToColorConverter" />
+        <converters:MethodToValueConverter x:Key="MethodToValueConverter" />
+        <selectors:JPropertyDataTemplateSelector x:Key="JPropertyDataTemplateSelector" />
+        <HierarchicalDataTemplate  x:Key="ArrayPropertyTemplate" DataType="{x:Type jlinq:JProperty}" ItemsSource="{Binding Converter={StaticResource ComplexPropertyMethodToValueConverter}, ConverterParameter='Children'}">
+            <StackPanel Orientation="Horizontal" Margin="1">
+                <TextBlock Text="{Binding Path=Name, Mode=OneWay}" />
+                <TextBlock Text=" : "/>
+                <TextBlock Text="array" Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
+                <TextBlock Text="{Binding Converter={StaticResource JArrayLengthConverter}}" Foreground="#a40000"/>
+            </StackPanel>
+        </HierarchicalDataTemplate>
+        <HierarchicalDataTemplate  x:Key="ObjectPropertyTemplate" DataType="{x:Type jlinq:JProperty}" ItemsSource="{Binding Converter={StaticResource ComplexPropertyMethodToValueConverter}, ConverterParameter='Children'}">
+            <StackPanel Orientation="Horizontal" Margin="1">
+                <TextBlock Text="{Binding Path=Name, Mode=OneWay}" />
+                <TextBlock Text=" : "/>
+                <TextBlock Text="{}{ }" Foreground="#729fcf"/>
+            </StackPanel>
+        </HierarchicalDataTemplate>
+        <DataTemplate x:Key="PrimitivePropertyTemplate" DataType="{x:Type jlinq:JProperty}" >
+
+            <StackPanel Orientation="Horizontal" Margin="1">
+                <TextBlock Text="{Binding Path=Name, Mode=OneWay}" />
+                <TextBlock Text=" : "/>
+                <TextBlock Text="  "/>
+
+                <TextBlock  Width="300" MouseLeftButtonDown="JValue_OnMouseLeftButtonDown"
+                           TextWrapping="Wrap" Text="{Binding Path=Value, Converter={StaticResource JValueConverter}}" 
+                           Foreground="{Binding Converter={StaticResource JPropertyTypeToColorConverter}}" />
+            </StackPanel>
+        </DataTemplate>
+        <HierarchicalDataTemplate DataType="{x:Type jlinq:JArray}" ItemsSource="{Binding Converter={StaticResource MethodToValueConverter}, ConverterParameter='Children'}">
+            <StackPanel Orientation="Horizontal" Margin="1">
+                <TextBlock Text="array" Foreground="WhiteSmoke" Background="#a40000" Padding="3, 0, 3, 1" Opacity="0.4" Margin="0,0,5,0"/>
+                <TextBlock Text="{Binding Converter={StaticResource JArrayLengthConverter}}" Foreground="#a40000"/>
+            </StackPanel>
+        </HierarchicalDataTemplate>
+        <HierarchicalDataTemplate DataType="{x:Type jlinq:JObject}" ItemsSource="{Binding Converter={StaticResource MethodToValueConverter}, ConverterParameter='Children'}">
+            <StackPanel Orientation="Horizontal" Margin="1">
+                <TextBlock Text=" "/>
+                <TextBlock Text="{}{ }" Foreground="#729fcf"/>
+            </StackPanel>
+        </HierarchicalDataTemplate>
+        <HierarchicalDataTemplate DataType="{x:Type jlinq:JConstructor}" ItemsSource="{Binding Converter={StaticResource MethodToValueConverter}, ConverterParameter='Children'}">
+            <TextBlock Text="Constructor">
+            </TextBlock>
+        </HierarchicalDataTemplate>
+        <HierarchicalDataTemplate DataType="{x:Type jlinq:JRaw}" ItemsSource="{Binding Converter={StaticResource MethodToValueConverter}, ConverterParameter='Children'}">
+            <TextBlock Text="Raw">
+            </TextBlock>
+        </HierarchicalDataTemplate>
+        <DataTemplate DataType="{x:Type jlinq:JValue}">
+            <TextBlock MouseLeftButtonDown="JValue_OnMouseLeftButtonDown" Width="300" 
+                           TextWrapping="Wrap" Text="{Binding Converter={StaticResource JValueConverter}}" 
+                           Foreground="{Binding Converter={StaticResource JValueTypeToColorConverter}}" />
+        </DataTemplate>
+    </UserControl.Resources>
+    <TreeView Padding="20" Margin="3" Name="JsonTreeView1" IsTextSearchEnabled="True" 
+              ItemTemplateSelector="{StaticResource JPropertyDataTemplateSelector}" BorderThickness="0"
+              >
+        <TreeView.ItemContainerStyle>
+            <Style TargetType="{x:Type TreeViewItem}" >
+                <Setter Property="IsExpanded" Value="False" />
+            </Style>
+        </TreeView.ItemContainerStyle>
+    </TreeView>
+</UserControl>

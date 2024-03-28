@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34714.143
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SPIN.Wpf.Controls.OTSAux", "SPIN.Wpf.Controls.OTSAux.csproj", "{8D9D9F8D-E3E2-4EF7-AE69-97D3EEC464DA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8D9D9F8D-E3E2-4EF7-AE69-97D3EEC464DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D9D9F8D-E3E2-4EF7-AE69-97D3EEC464DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D9D9F8D-E3E2-4EF7-AE69-97D3EEC464DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D9D9F8D-E3E2-4EF7-AE69-97D3EEC464DA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9AF3C63B-42AD-449D-BD7F-C00AC2165667}
+	EndGlobalSection
+EndGlobal
