@@ -1,12 +1,18 @@
-﻿#addin nuget:?package=Cake.FileHelpers
-#tool nuget:?package=nuget.commandline
+﻿#tool nuget:?package=nuget.commandline
 #tool nuget:?package=MSBuild.StructuredLogger
 
-var target = Argument("target", "Default");
+var target = Argument("target", "PublishActionNet");
 var configuration = Argument("configuration", "Debug");
 var solution = "./TestCakeConsoleApp.sln";
 var solutionDir = "./"; // Replace with the path to your solution directory
-var newVersion = "1.0.0.1"; // Replace with the new version number1.2.3.4";
+var newVersion = "1.0.0.4"; // Replace with the new version number1.2.3.4";
+
+void UpdateVersionInAsssemblyFiles(string filePath, string searchText, string replaceText)
+{
+    var text = System.IO.File.ReadAllText(filePath);
+    text = System.Text.RegularExpressions.Regex.Replace(text, searchText, replaceText);
+    System.IO.File.WriteAllText(filePath, text);
+}
 
 Task("Update-Assembly-Version")
   .Does(() =>
@@ -22,19 +28,21 @@ Task("Update-Assembly-Version")
 
     try
     {
-    // Update AssemblyVersion
-    ReplaceTextInFiles(assemblyInfoFile.FullPath, 
+      
+      // Update AssemblyVersion
+      UpdateVersionInAsssemblyFiles(assemblyInfoFile.FullPath, 
       @"AssemblyVersion\(""\d+\.\d+\.\d+\.\d+""\)", 
       $"AssemblyVersion(\"{newVersion}\")");
+      
+      UpdateVersionInAsssemblyFiles(assemblyInfoFile.FullPath, 
+      @"AssemblyFileVersion\(""\d+\.\d+\.\d+\.\d+""\)", 
+      $"AssemblyFileVersion(\"{newVersion}\")");
     }
     catch (Exception ex)
     {
       Information($"Erro ao alterar AssemblyVersion: {ex.Message}");
     }
-    // Update AssemblyFileVersion
-    ReplaceTextInFiles(assemblyInfoFile.FullPath, 
-      @"AssemblyFileVersion\(""\d+.\d+.\d+.\d+""\)", 
-      $"AssemblyFileVersion(\"{newVersion}\")");
+    
   }
 });
 
@@ -53,14 +61,14 @@ Task("Restore-NuGet-Packages")
 
 Task("Build")
   .IsDependentOn("Restore-NuGet-Packages")
+  .IsDependentOn("Update-Assembly-Version")
   .Does(() =>
 {
   MSBuild(solution, settings =>
     settings.SetConfiguration(configuration));
 });
 
-Task("Default")
-  .IsDependentOn("Update-Assembly-Version");
-  //.IsDependentOn("Build");
+Task("PublishActionNet")  
+  .IsDependentOn("Build");
 
 RunTarget(target);
