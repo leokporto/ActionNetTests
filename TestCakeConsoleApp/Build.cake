@@ -1,5 +1,5 @@
-﻿#tool nuget:?package=nuget.commandline
-#tool nuget:?package=MSBuild.StructuredLogger
+﻿#tool nuget:?package=nuget.commandline&version=6.9.1
+#tool nuget:?package=MSBuild.StructuredLogger&version=2.2.206
 
 var target = Argument("target", "PublishActionNet");
 var configuration = Argument("configuration", "Debug");
@@ -14,7 +14,18 @@ void UpdateVersionInAsssemblyFiles(string filePath, string searchText, string re
     System.IO.File.WriteAllText(filePath, text);
 }
 
+Task("Clean")
+  .Does(() =>
+{
+  CleanDirectory($"./{configuration}");
+});
+
+Task("GetLatestVersionSrc");
+
+Task("GetLatestVersionResources");
+
 Task("Update-Assembly-Version")
+  .IsDependentOn("GetLatestVersionSrc")
   .Does(() =>
 {
   //Information($"./**/AssemblyInfo.cs");
@@ -46,14 +57,7 @@ Task("Update-Assembly-Version")
   }
 });
 
-Task("Clean")
-  .Does(() =>
-{
-  CleanDirectory($"./{configuration}");
-});
-
-Task("Restore-NuGet-Packages")
-  .IsDependentOn("Clean")
+Task("Restore-NuGet-Packages")  
   .Does(() =>
 {
   NuGetRestore(solution);
@@ -68,7 +72,33 @@ Task("Build")
     settings.SetConfiguration(configuration));
 });
 
-Task("PublishActionNet")  
-  .IsDependentOn("Build");
+Task("CopyTatsoftFiles")
+  .IsDependentOn("GetLatestVersionResources");
+
+Task("Copy3rdPartyFiles")
+  .IsDependentOn("CopyTatsoftFiles");
+
+Task("CopyBuildFiles")
+  .IsDependentOn("Build")
+  .IsDependentOn("Copy3rdPartyFiles");
+
+Task("GetHelpFiles");
+
+Task("CopyHelpFiles")
+  .IsDependentOn("GetHelpFiles");
+  
+Task("SignFiles")
+  .IsDependentOn("CopyBuildFiles");
+
+Task("SetStagingFiles")    
+  .IsDependentOn("Clean")
+  .IsDependentOn("CopyHelpFiles")
+  .IsDependentOn("SignFiles");
+
+Task("CheckinFiles");
+
+Task("PublishActionNet")
+  .IsDependentOn("SetStagingFiles")
+  .IsDependentOn("CheckinFiles");
 
 RunTarget(target);
