@@ -30,7 +30,7 @@ namespace TestFuckinOracle
 
 	internal class Program
 	{
-		private static Dictionary<Type, OracleType> _sqlGlossaryTypes = new Dictionary<Type, OracleType>();
+		private static Dictionary<Type, DbType> _sqlGlossaryTypes = new Dictionary<Type, DbType>();
 		private static Dictionary<Type, string> _sqlGlossary = new Dictionary<Type, string>();
 		private const int STEP_VALUE = 100;
 		private const int TOTAL_VALUES = 1347;
@@ -75,13 +75,13 @@ namespace TestFuckinOracle
 					//	InsertMultipleWithTransaction(list, conn);
 					//}
 
-					DeleteAll(conn);
+					//DeleteAll(conn);
 
-					using (miniProfiler.Step("InsertMultipleOneByOne"))
-					{
-						Console.WriteLine("InsertMultipleOneByOne");
-						InsertMultipleOneByOne(list, conn);
-					}
+					//using (miniProfiler.Step("InsertMultipleOneByOne"))
+					//{
+					//	Console.WriteLine("InsertMultipleOneByOne");
+					//	InsertMultipleOneByOne(list, conn);
+					//}
 
 					DeleteAll(conn);
 
@@ -91,13 +91,13 @@ namespace TestFuckinOracle
 						BatchesInsertWithAction(list,conn, InsertMultipleWithTransaction);
 					}
 
-					DeleteAll(conn);
+					//DeleteAll(conn);
 
-					using (miniProfiler.Step("BatchesInsertMultipleWithOneTransaction"))
-					{
-						Console.WriteLine("BatchesInsertMultipleWithOneTransaction");
-						BatchesInsertMultipleWithOneTransaction(list, conn);
-					}
+					//using (miniProfiler.Step("BatchesInsertMultipleWithOneTransaction"))
+					//{
+					//	Console.WriteLine("BatchesInsertMultipleWithOneTransaction");
+					//	BatchesInsertMultipleWithOneTransaction(list, conn);
+					//}
 
 					//DeleteAll(conn);
 
@@ -107,7 +107,7 @@ namespace TestFuckinOracle
 					//	BatchesInsertWithAction(list, conn, InsertMultipleOneByOne);
 					//}
 
-					DeleteAll(conn);
+					//DeleteAll(conn);
 
 					//using(miniProfiler.Step("InsertMultipleTableValued"))
 					//{
@@ -308,7 +308,17 @@ namespace TestFuckinOracle
 					
 						var valueProperties = GetProperties(item);
 						foreach (var prop in valueProperties)
-							cmd.Parameters[prop.Name].Value = prop.GetValue(item);
+						{
+							if (_sqlGlossaryTypes.ContainsKey(prop.PropertyType))
+							{
+								cmd.Parameters.Add(new OracleParameter()
+								{
+									ParameterName = prop.Name,
+									DbType = _sqlGlossaryTypes[prop.PropertyType],
+									Value = prop.GetValue(item)
+								});
+							}
+						}
 
 						var result = cmd.ExecuteNonQuery();
 						totalRecords += result;
@@ -454,17 +464,17 @@ namespace TestFuckinOracle
 			_sqlGlossary.Add(typeof(double), "REAL");
 			_sqlGlossary.Add(typeof(float), "FLOAT");
 
-			_sqlGlossaryTypes.Add(typeof(long), OracleType.Number);
-			_sqlGlossaryTypes.Add(typeof(long?), OracleType.Number);
-			_sqlGlossaryTypes.Add(typeof(int), OracleType.Number);		
-			_sqlGlossaryTypes.Add(typeof(string), OracleType.NVarChar);
-			_sqlGlossaryTypes.Add(typeof(byte), OracleType.Byte);
-			_sqlGlossaryTypes.Add(typeof(bool), OracleType.Byte);
-			_sqlGlossaryTypes.Add(typeof(short), OracleType.Number);
-			_sqlGlossaryTypes.Add(typeof(DateTime), OracleType.DateTime);
-			_sqlGlossaryTypes.Add(typeof(DateTime?), OracleType.DateTime);
-			_sqlGlossaryTypes.Add(typeof(double), OracleType.Double);
-			_sqlGlossaryTypes.Add(typeof(float), OracleType.Float);
+			_sqlGlossaryTypes.Add(typeof(long), DbType.Int64);
+			_sqlGlossaryTypes.Add(typeof(long?), DbType.Int64);
+			_sqlGlossaryTypes.Add(typeof(int), DbType.Int32);		
+			_sqlGlossaryTypes.Add(typeof(string), DbType.String);
+			_sqlGlossaryTypes.Add(typeof(byte), DbType.Byte);
+			_sqlGlossaryTypes.Add(typeof(bool), DbType.Boolean);
+			_sqlGlossaryTypes.Add(typeof(short), DbType.Int16);
+			_sqlGlossaryTypes.Add(typeof(DateTime), DbType.DateTime);
+			_sqlGlossaryTypes.Add(typeof(DateTime?), DbType.DateTime);
+			_sqlGlossaryTypes.Add(typeof(double), DbType.Double);
+			_sqlGlossaryTypes.Add(typeof(float), DbType.Single);
 		}
 		#endregion
 	}
